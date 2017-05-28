@@ -4,7 +4,7 @@ import { Segment, Header, Image, Button, Form, Card, Input, Item, Label, Modal, 
 
 const items = ['Item 1', 'Item 2', 'Item 3'];
 const furirin = require('../assets/furirin.jpg');
-const majalah = require('../assets/majalah.jpg')
+const majalah = require('../assets/majalah.jpg');
 const suwawa = require('../assets/suwawa.jpg');
 const rikyako = require('../assets/rikyako.jpg');
 

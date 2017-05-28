@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Segment, Header, Input, Button, Divider, Modal, Form, Icon, Image, Dimmer, Loader, Message } from 'semantic-ui-react';
+import { Segment, Header, Input, Button, Divider, Modal, Form, Icon, Image, Dimmer, Loader, Message, Card } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 
@@ -9,6 +9,7 @@ import '../App.css';
 import store from '../service/store';
 import { setLoginState } from '../service/action';
 
+const majalah = require('../assets/majalah.jpg');
 const furirin = require('../assets/furirin.jpg');
 const items = ['Item 1', 'Item 2', 'Item 3'];
 const logo = require('../assets/logo.png');
@@ -112,7 +113,7 @@ class Home extends Component {
             }).catch(console.log)
     }
 
-    usernameCheck(){
+    usernameCheck() {
         console.log(this.state.username)
         fetch('http://localhost:12345/check-username', {
             method: 'POST',
@@ -123,17 +124,17 @@ class Home extends Component {
                 username: this.state.username
             })
         })
-        .then((response) => {
-            console.log(response)
-            return response.json();
-        })
-        .then((responseJson) => {
-            if (responseJson.status == 'unavailable'){
-                this.setState({ usernameMessage: true })
-            } else {
-                this.setState({ usernameMessage: false })
-            }
-        })
+            .then((response) => {
+                console.log(response)
+                return response.json();
+            })
+            .then((responseJson) => {
+                if (responseJson.status == 'unavailable') {
+                    this.setState({ usernameMessage: true })
+                } else {
+                    this.setState({ usernameMessage: false })
+                }
+            })
     }
 
     getHomeForm() {
@@ -166,15 +167,15 @@ class Home extends Component {
                             <Form>
                                 <Form.Field>
                                     <label>First Name</label>
-                                    <input placeholder='First name' onChange = {(e) => this.setState({ firstname: e.target.value })} />
+                                    <input placeholder='First name' onChange={(e) => this.setState({ firstname: e.target.value })} />
                                 </Form.Field>
                                 <Form.Field>
                                     <label>Last Name</label>
-                                    <input placeholder='Last name' onChange = {(e) => this.setState({ lastname: e.target.value })} />
+                                    <input placeholder='Last name' onChange={(e) => this.setState({ lastname: e.target.value })} />
                                 </Form.Field>
                                 <Form.Field>
                                     <label>Username</label>
-                                    <input placeholder='Username' onChange = {(e) => this.setState({ username: e.target.value })} onBlur = {() => this.usernameCheck()} />
+                                    <input placeholder='Username' onChange={(e) => this.setState({ username: e.target.value })} onBlur={() => this.usernameCheck()} />
                                 </Form.Field>
                                 <Message negative floating hidden={!this.state.usernameMessage}>
                                     <Message.Header>Username taken</Message.Header>
@@ -232,8 +233,139 @@ class Home extends Component {
                             <Header dividing>
                                 Featured Products
                             </Header>
-                            <Segment color='red'>
-                                Lorem ipsum dolor sit amet
+                            <Segment>
+                                <div>
+                                    <Card.Group>
+                                        <Card>
+                                            <Image src={majalah} />
+                                            <Card.Content>
+                                                <Card.Header>
+                                                    Young Weekly Jump
+                                                        </Card.Header>
+                                                <Card.Meta>
+                                                    <span className='date'>
+                                                        Rp. 200.000,-
+                                                    </span>
+                                                </Card.Meta>
+                                                <Card.Description>
+                                                    Featuring Aqours voice actress
+                                                </Card.Description>
+                                            </Card.Content>
+                                        </Card>
+                                        <Card>
+                                            <Image src={majalah} />
+                                            <Card.Content>
+                                                <Card.Header>
+                                                    Young Weekly Jump Gold Edition
+                                                </Card.Header>
+                                                <Card.Meta>
+                                                    <span className='date'>
+                                                        Rp. 500.000,-
+                                                    </span>
+                                                </Card.Meta>
+                                                <Card.Description>
+                                                    Featuring Aqours voice actress and more
+                                                </Card.Description>
+                                            </Card.Content>
+                                        </Card>
+                                        <Card>
+                                            <Image src={majalah} />
+                                            <Card.Content>
+                                                <Card.Header>
+                                                    Young Weekly Jump
+                                                </Card.Header>
+                                                <Card.Meta>
+                                                    <span className='date'>
+                                                        Rp. 200.000,-
+                                                    </span>
+                                                </Card.Meta>
+                                                <Card.Description>
+                                                    Featuring Aqours voice actress
+                                                </Card.Description>
+                                            </Card.Content>
+                                        </Card>
+                                        <Card>
+                                            <Image src={majalah} />
+                                            <Card.Content>
+                                                <Card.Header>
+                                                    Young Weekly Jump Gold Edition
+                                                </Card.Header>
+                                                <Card.Meta>
+                                                    <span className='date'>
+                                                        Rp. 500.000,-
+                                                    </span>
+                                                </Card.Meta>
+                                                <Card.Description>
+                                                    Featuring Aqours voice actress and more
+                                                </Card.Description>
+                                            </Card.Content>
+                                        </Card>
+                                        <Card>
+                                            <Image src={majalah} />
+                                            <Card.Content>
+                                                <Card.Header>
+                                                    Young Weekly Jump
+                                                </Card.Header>
+                                                <Card.Meta>
+                                                    <span className='date'>
+                                                        Rp. 200.000,-
+                                                    </span>
+                                                </Card.Meta>
+                                                <Card.Description>
+                                                    Featuring Aqours voice actress
+                                                </Card.Description>
+                                            </Card.Content>
+                                        </Card>
+                                        <Card>
+                                            <Image src={majalah} />
+                                            <Card.Content>
+                                                <Card.Header>
+                                                    Young Weekly Jump Gold Edition
+                                                </Card.Header>
+                                                <Card.Meta>
+                                                    <span className='date'>
+                                                        Rp. 500.000,-
+                                                    </span>
+                                                </Card.Meta>
+                                                <Card.Description>
+                                                    Featuring Aqours voice actress and more
+                                                </Card.Description>
+                                            </Card.Content>
+                                        </Card>
+                                        <Card>
+                                            <Image src={majalah} />
+                                            <Card.Content>
+                                                <Card.Header>
+                                                    Young Weekly Jump
+                                                </Card.Header>
+                                                <Card.Meta>
+                                                    <span className='date'>
+                                                        Rp. 200.000,-
+                                                    </span>
+                                                </Card.Meta>
+                                                <Card.Description>
+                                                    Featuring Aqours voice actress
+                                                </Card.Description>
+                                            </Card.Content>
+                                        </Card>
+                                        <Card>
+                                            <Image src={majalah} />
+                                            <Card.Content>
+                                                <Card.Header>
+                                                    Young Weekly Jump Gold Edition
+                                                </Card.Header>
+                                                <Card.Meta>
+                                                    <span className='date'>
+                                                        Rp. 500.000,-
+                                                    </span>
+                                                </Card.Meta>
+                                                <Card.Description>
+                                                    Featuring Aqours voice actress and more
+                                                </Card.Description>
+                                            </Card.Content>
+                                        </Card>
+                                    </Card.Group>
+                                </div>
                             </Segment>
                         </div>
                         <div style={styles.right}>
