@@ -1,8 +1,12 @@
 import React, { Component, PropTypes } from 'react';
 import { Container, Button } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
+import { connect } from 'react-redux';
 
-export default class AppBar extends Component {
+import { setLoginState } from '../service/action';
+import store from '../service/store';
+
+class AppBar extends Component {
 
     static propTypes = {
         menus: PropTypes.array
@@ -19,6 +23,26 @@ export default class AppBar extends Component {
         )
     }
 
+    logout() {
+        store.dispatch(setLoginState('logged_out'));
+        this.props.history.push('/');
+    }
+
+    getButton(){
+        if (this.props.loginState == 'logged_in'){
+            return(
+                <div>
+                    <Link to='/dashboard'><Button color='orange'>Dashboard</Button></Link>
+                    <Button negative onClick = {() => this.logout()}>Logout</Button>
+                </div>
+            )
+        } else {
+            return(
+                null
+            )
+        }
+    }
+
     render() {
         return (
             <div style={styles.container}>
@@ -27,7 +51,7 @@ export default class AppBar extends Component {
                     <div style={styles.menu}>
                         {this.getContent()}
                         <div style={styles.buttons}>
-                            <Link to='/dashboard'><Button color='orange'>Dashboard</Button></Link>
+                            {this.getButton()}
                         </div>
                     </div>
                 </div>
@@ -98,3 +122,12 @@ const styles = {
         background: 'linear-gradient(to bottom, rgba(120,120,120, 0.3) , transparent)'
     }
 }
+
+const mapStateToProps = (state) => {
+    console.log(state);
+    return{
+        loginState: state.loginState
+    }
+}
+
+export default connect(mapStateToProps)(AppBar);

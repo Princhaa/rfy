@@ -21,6 +21,7 @@ export default class Profile extends Component {
                 <div>
                     <AppBar
                         menus={items}
+                        history={this.props.history}
                     />
                 </div>
                 <div style={styles.container}>
@@ -37,7 +38,7 @@ export default class Profile extends Component {
                                     Furihata
                                 </Segment>
                                 <Segment attached='bottom'>
-                                    <Modal trigger = {<Button primary fluid>Change profile picture</Button>}>
+                                    <Modal trigger={<Button primary fluid>Change profile picture</Button>}>
                                         <Modal.Header>
                                             Change profile picture
                                         </Modal.Header>
@@ -51,16 +52,16 @@ export default class Profile extends Component {
                                             <Button color='red'>
                                                 <Icon name='ban' /> Cancel
                                             </Button>
-                                    </Modal.Actions>
+                                        </Modal.Actions>
                                     </Modal>
                                 </Segment>
-                                <Header as = 'h4' attached = 'top'>
+                                <Header as='h4' attached='top'>
                                     Latest Messages
                                 </Header>
                                 <Segment attached>
                                     <Item.Group divided>
                                         <Item>
-                                            <Item.Image size='tiny' src={rikyako} shape = 'circular'/>
+                                            <Item.Image size='tiny' src={rikyako} shape='circular' />
                                             <Item.Content>
                                                 <Item.Header>Aida Rikako</Item.Header>
                                                 <Item.Meta>
@@ -70,7 +71,7 @@ export default class Profile extends Component {
                                             </Item.Content>
                                         </Item>
                                         <Item>
-                                            <Item.Image size='tiny' src={suwawa} shape = 'circular'/>
+                                            <Item.Image size='tiny' src={suwawa} shape='circular' />
                                             <Item.Content>
                                                 <Item.Header>Suwa Nanaka</Item.Header>
                                                 <Item.Meta>
@@ -88,37 +89,37 @@ export default class Profile extends Component {
                                     <Form>
                                         <Form.Field>
                                             <label>First Name</label>
-                                            <input placeholder='First Name' defaultValue = {this.state.firstName} disabled = {!this.state.isProfileEditable} onChange = {(value) => this.setState({firstName: value})}/>
+                                            <input placeholder='First Name' defaultValue={this.state.firstName} disabled={!this.state.isProfileEditable} onChange={(value) => this.setState({ firstName: value })} />
                                         </Form.Field>
                                         <Form.Field>
                                             <label>Last Name</label>
-                                            <input placeholder='Last Name' defaultValue='Ai' disabled = {!this.state.isProfileEditable} />
+                                            <input placeholder='Last Name' defaultValue='Ai' disabled={!this.state.isProfileEditable} />
                                         </Form.Field>
                                         <Form.Field>
                                             <label>Username</label>
-                                            <input placeholder='Username' defaultValue='fururin' disabled = {!this.state.isProfileEditable} />
+                                            <input placeholder='Username' defaultValue='fururin' disabled={!this.state.isProfileEditable} />
                                         </Form.Field>
                                         <Form.Field>
                                             <label>Password</label>
-                                            <input placeholder='Password' type='password' defaultValue='fururin123' disabled = {!this.state.isProfileEditable} />
+                                            <input placeholder='Password' type='password' defaultValue='fururin123' disabled={!this.state.isProfileEditable} />
                                         </Form.Field>
                                         <Form.Field>
                                             <label>Phone Number</label>
-                                            <input placeholder='Phone Number' defaultValue='+817739200492' disabled = {!this.state.isProfileEditable} />
+                                            <input placeholder='Phone Number' defaultValue='+817739200492' disabled={!this.state.isProfileEditable} />
                                         </Form.Field>
                                         <Form.Field>
                                             <label>Email</label>
-                                            <input placeholder='Email' type='email' defaultValue='furihataai32@gmail.com' disabled = {!this.state.isProfileEditable} />
+                                            <input placeholder='Email' type='email' defaultValue='furihataai32@gmail.com' disabled={!this.state.isProfileEditable} />
                                         </Form.Field>
                                     </Form>
                                     <div style={styles.buttonContainer}>
-                                        {(this.state.isProfileEditable) ? 
+                                        {(this.state.isProfileEditable) ?
                                             <div>
-                                                <Button negative floated='right' onClick = {() => this.setState({isProfileEditable: !this.state.isProfileEditable})}>Cancel</Button> 
-                                                <Button positive floated='right' onClick = {() => this.setState({isProfileEditable: !this.state.isProfileEditable})}>Save changes</Button>
+                                                <Button negative floated='right' onClick={() => this.setState({ isProfileEditable: !this.state.isProfileEditable })}>Cancel</Button>
+                                                <Button positive floated='right' onClick={() => this.setState({ isProfileEditable: !this.state.isProfileEditable })}>Save changes</Button>
                                             </div>
-                                            : 
-                                            <Button primary floated='right' onClick = {() => this.setState({isProfileEditable: !this.state.isProfileEditable})}>Edit profile</Button>}
+                                            :
+                                            <Button primary floated='right' onClick={() => this.setState({ isProfileEditable: !this.state.isProfileEditable })}>Edit profile</Button>}
                                     </div>
                                 </Segment>
                                 <Header as='h2' attached='top'>Post List</Header>

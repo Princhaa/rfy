@@ -54,10 +54,10 @@ export default class Dashboard extends Component {
 
     handleItemClick = (e, { name }) => this.setState({ activeItem: name });
 
-    getContent(){
-        switch (this.state.activeItem){
-            case 'posts' : return <PendingPosts style = {styles.right}/>
-            case 'users' : return <UsersList style = {styles.right} />
+    getContent() {
+        switch (this.state.activeItem) {
+            case 'posts': return <PendingPosts style={styles.right} />
+            case 'users': return <UsersList style={styles.right} />
         }
     }
 
@@ -68,6 +68,7 @@ export default class Dashboard extends Component {
                 <div>
                     <AppBar
                         menus={items}
+                        history={this.props.history}
                     />
                 </div>
                 <div style={styles.container}>

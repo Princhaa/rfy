@@ -1,10 +1,15 @@
 import React, { Component } from 'react';
-import AppBar from '../components/AppBar';
-import { Segment, Header, Input, Button, Divider, Modal, Form, Icon, Image, Dimmer, Loader } from 'semantic-ui-react';
-import '../App.css';
+import { Segment, Header, Input, Button, Divider, Modal, Form, Icon, Image, Dimmer, Loader, Message } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
-import config from '../config/config';
+import { connect } from 'react-redux';
 
+import config from '../config/config';
+import AppBar from '../components/AppBar';
+import '../App.css';
+import store from '../service/store';
+import { setLoginState } from '../service/action';
+
+const furirin = require('../assets/furirin.jpg');
 const items = ['Item 1', 'Item 2', 'Item 3'];
 const logo = require('../assets/logo.png');
 
@@ -43,15 +48,18 @@ const styles = {
     }
 }
 
-export default class Home extends Component {
+class Home extends Component {
 
     state = {
-        isRegistering: false
+        isRegistering: false,
+        username: '',
+        password: '',
+        loginMessage: false
     }
 
     register() {
         this.setState({ isRegistering: true });
-        return fetch('http://192.168.88.21:8000/register', {
+        fetch('http://192.168.88.21:8000/register', {
             method: 'POST',
             body: JSON.stringify({
                 firstname: this.firstname.value,
@@ -61,12 +69,110 @@ export default class Home extends Component {
                 password: this.password.value
             })
         }).then((response) => {
-            if (response.status == 200){
-                this.setState = ({isRegistering: false})
+            if (response.status == 200) {
+                this.setState = ({ isRegistering: false })
             } else {
                 console.log(response.status);
             }
         })
+    }
+
+    async login() {
+        console.log(this.state)
+        this.setState({ isRegistering: true });
+        fetch('http://localhost:12345/login', {
+            method: 'POST',
+            headers: {
+                'Content-type': 'application/json'
+            },
+            body: JSON.stringify({
+                username: this.state.username,
+                password: this.state.password
+            })
+        })
+            .then((response) => {
+                console.log(response.status);
+                if (response.status == 200) return response.json();
+            })
+            .then((responseJson) => {
+                if (responseJson != undefined) {
+                    console.log(responseJson);
+                    this.setState({ isRegistering: false });
+                    store.dispatch(setLoginState('logged_in'));
+                    this.props.history.push('/profile');
+                }
+                else {
+                    this.setState({ isRegistering: false, loginMessage: true });
+                }
+            }).catch(console.log)
+    }
+
+    getHomeForm() {
+        if (this.props.loginState == 'logged_in') {
+            return (
+                <Segment attached>
+                    <Image src={furirin} size='medium' shape='circular' />
+                    <Header as='h2'>Furihata Ai</Header>
+                    <Button fluid primary>Edit profile</Button>
+                </Segment>
+            )
+        } else {
+            return (
+                <Segment attached color='red'>
+                    <Input icon='user' iconPosition='left' fluid placeholder='Username' onChange={(e) => this.setState({ username: e.target.value })} />
+                    <br />
+                    <Input icon='privacy' iconPosition='left' fluid placeholder='Password' type='password' onChange={(e) => this.setState({ password: e.target.value })} />
+                    <br />
+                    <Button primary fluid onClick={() => this.login()}>Login</Button>
+                    <Message negative floating hidden={!this.state.loginMessage}>
+                        <Message.Header>Login failed</Message.Header>
+                        <p>Please check your username and password</p>
+                    </Message>
+                    <Divider horizontal>OR</Divider>
+                    <Modal trigger={<Button secondary fluid>Register</Button>}>
+                        <Modal.Header>
+                            Register
+                        </Modal.Header>
+                        <Modal.Content>
+                            <Form>
+                                <Form.Field>
+                                    <label>First Name</label>
+                                    <input placeholder='First name' ref={(firstname) => this.firstname = firstname} />
+                                </Form.Field>
+                                <Form.Field>
+                                    <label>Last Name</label>
+                                    <input placeholder='Last name' ref={(lastname) => this.lastname = lastname} />
+                                </Form.Field>
+                                <Form.Field>
+                                    <label>Username</label>
+                                    <input placeholder='Username' ref={(username) => this.username = username} />
+                                </Form.Field>
+                                <Form.Field>
+                                    <label>Email</label>
+                                    <input placeholder='Email' ref={(email) => this.email = email} />
+                                </Form.Field>
+                                <Form.Field>
+                                    <label>Password</label>
+                                    <input placeholder='Password' type='password' ref={(password) => this.password = password} />
+                                </Form.Field>
+                                <Form.Field>
+                                    <label>Confirm password</label>
+                                    <input placeholder='Confirm password' type='password' />
+                                </Form.Field>
+                            </Form>
+                        </Modal.Content>
+                        <Modal.Actions>
+                            <Button color='green' onClick={() => this.register()}>
+                                <Icon name='checkmark' /> Register
+                                        </Button>
+                            <Button color='red'>
+                                <Icon name='ban' /> Cancel
+                                         </Button>
+                        </Modal.Actions>
+                    </Modal>
+                </Segment>
+            )
+        }
     }
 
     render() {
@@ -75,13 +181,19 @@ export default class Home extends Component {
                 <div>
                     <AppBar
                         menus={items}
+                        history={this.props.history}
                     />
                 </div>
                 <div style={styles.container}>
+                    <Dimmer active={this.state.isRegistering}>
+                        <Loader>Registering</Loader>
+                    </Dimmer>
                     <div style={styles.content}>
                         <div style={styles.left}>
                             <div style={styles.logo}>
-                                <Image src={logo} />
+                                <div>
+                                    <Image src={logo} />
+                                </div>
                             </div>
                             <Input icon='search' fluid placeholder='Search' />
                             <Header dividing>
@@ -93,60 +205,9 @@ export default class Home extends Component {
                         </div>
                         <div style={styles.right}>
                             <Header as='h3' attached='top'>
-                                Login
+                                {this.props.loginState == 'logged_in' ? 'Profile' : 'Login'}
                             </Header>
-                            <Segment attached color='red'>
-                                <Input icon='user' iconPosition='left' fluid placeholder='Username' />
-                                <br />
-                                <Input icon='privacy' iconPosition='left' fluid placeholder='Password' type='password' />
-                                <br />
-                                <Link to='/profile'><Button primary fluid>Login</Button></Link>
-                                <Divider horizontal>OR</Divider>
-                                <Modal trigger={<Button secondary fluid>Register</Button>}>
-                                    <Modal.Header>
-                                        Register
-                                    </Modal.Header>
-                                    <Modal.Content>
-                                        <Dimmer active={this.state.isRegistering}>
-                                            <Loader>Registering</Loader>
-                                        </Dimmer>
-                                        <Form>
-                                            <Form.Field>
-                                                <label>First Name</label>
-                                                <input placeholder='First name' ref={(firstname) => this.firstname = firstname} />
-                                            </Form.Field>
-                                            <Form.Field>
-                                                <label>Last Name</label>
-                                                <input placeholder='Last name' ref={(lastname) => this.lastname = lastname} />
-                                            </Form.Field>
-                                            <Form.Field>
-                                                <label>Username</label>
-                                                <input placeholder='Username' ref={(username) => this.username = username} />
-                                            </Form.Field>
-                                            <Form.Field>
-                                                <label>Email</label>
-                                                <input placeholder='Email' ref={(email) => this.email = email} />
-                                            </Form.Field>
-                                            <Form.Field>
-                                                <label>Password</label>
-                                                <input placeholder='Password' type='password' ref={(password) => this.password = password} />
-                                            </Form.Field>
-                                            <Form.Field>
-                                                <label>Confirm password</label>
-                                                <input placeholder='Confirm password' type='password' />
-                                            </Form.Field>
-                                        </Form>
-                                    </Modal.Content>
-                                    <Modal.Actions>
-                                        <Button color='green' onClick={() => this.register()}>
-                                            <Icon name='checkmark' /> Register
-                                        </Button>
-                                        <Button color='red'>
-                                            <Icon name='ban' /> Cancel
-                                         </Button>
-                                    </Modal.Actions>
-                                </Modal>
-                            </Segment>
+                            {this.getHomeForm()}
                             <Segment>
                                 Lorem ipsum dolor sit amet
                             </Segment>
@@ -157,3 +218,11 @@ export default class Home extends Component {
         )
     }
 }
+
+const mapStateToProps = (state) => {
+    return {
+        loginState: state.loginState
+    }
+}
+
+export default connect(mapStateToProps)(Home);
