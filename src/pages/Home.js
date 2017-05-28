@@ -54,7 +54,12 @@ class Home extends Component {
         isRegistering: false,
         username: '',
         password: '',
-        loginMessage: false
+        loginMessage: false,
+        usernameMessage: false,
+        firstname: '',
+        lastname: '',
+        email: '',
+        confirmpassword: ''
     }
 
     register() {
@@ -107,6 +112,30 @@ class Home extends Component {
             }).catch(console.log)
     }
 
+    usernameCheck(){
+        console.log(this.state.username)
+        fetch('http://localhost:12345/check-username', {
+            method: 'POST',
+            headers: {
+                'Content-type': 'application/json'
+            },
+            body: JSON.stringify({
+                username: this.state.username
+            })
+        })
+        .then((response) => {
+            console.log(response)
+            return response.json();
+        })
+        .then((responseJson) => {
+            if (responseJson.status == 'unavailable'){
+                this.setState({ usernameMessage: true })
+            } else {
+                this.setState({ usernameMessage: false })
+            }
+        })
+    }
+
     getHomeForm() {
         if (this.props.loginState == 'logged_in') {
             return (
@@ -137,16 +166,20 @@ class Home extends Component {
                             <Form>
                                 <Form.Field>
                                     <label>First Name</label>
-                                    <input placeholder='First name' ref={(firstname) => this.firstname = firstname} />
+                                    <input placeholder='First name' onChange = {(e) => this.setState({ firstname: e.target.value })} />
                                 </Form.Field>
                                 <Form.Field>
                                     <label>Last Name</label>
-                                    <input placeholder='Last name' ref={(lastname) => this.lastname = lastname} />
+                                    <input placeholder='Last name' onChange = {(e) => this.setState({ lastname: e.target.value })} />
                                 </Form.Field>
                                 <Form.Field>
                                     <label>Username</label>
-                                    <input placeholder='Username' ref={(username) => this.username = username} />
+                                    <input placeholder='Username' onChange = {(e) => this.setState({ username: e.target.value })} onBlur = {() => this.usernameCheck()} />
                                 </Form.Field>
+                                <Message negative floating hidden={!this.state.usernameMessage}>
+                                    <Message.Header>Username taken</Message.Header>
+                                    <p>That username is already taken!</p>
+                                </Message>
                                 <Form.Field>
                                     <label>Email</label>
                                     <input placeholder='Email' ref={(email) => this.email = email} />
