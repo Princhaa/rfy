@@ -60,12 +60,13 @@ class Home extends Component {
         firstname: '',
         lastname: '',
         email: '',
-        confirmpassword: ''
+        confirmpassword: '',
+        registerModalOpened: false
     }
 
     register() {
         this.setState({ isRegistering: true });
-        fetch('http://192.168.88.21:8000/register', {
+        fetch('http://192.168.88.6:12345/register', {
             method: 'POST',
             body: JSON.stringify({
                 firstname: this.firstname.value,
@@ -86,7 +87,7 @@ class Home extends Component {
     async login() {
         console.log(this.state)
         this.setState({ isRegistering: true });
-        fetch('http://localhost:12345/login', {
+        fetch('http://192.168.88.6:12345/login', {
             method: 'POST',
             headers: {
                 'Content-type': 'application/json'
@@ -113,9 +114,11 @@ class Home extends Component {
             }).catch(console.log)
     }
 
-    usernameCheck() {
-        console.log(this.state.username)
-        fetch('http://localhost:12345/check-username', {
+    usernameCheck(e) {
+        this.setState({ username: e });
+        console.log(e);
+        console.log(this.state.username);
+        fetch('http://192.168.88.6:12345/check-username', {
             method: 'POST',
             headers: {
                 'Content-type': 'application/json'
@@ -135,6 +138,10 @@ class Home extends Component {
                     this.setState({ usernameMessage: false })
                 }
             })
+    }
+
+    closeModal(){
+        this.setState({ registerModalOpened: false })
     }
 
     getHomeForm() {
@@ -159,7 +166,7 @@ class Home extends Component {
                         <p>Please check your username and password</p>
                     </Message>
                     <Divider horizontal>OR</Divider>
-                    <Modal trigger={<Button secondary fluid>Register</Button>}>
+                    <Modal trigger={<Button secondary fluid onClick = {() => this.setState({ registerModalOpened: true })}>Register</Button>} open = {this.state.registerModalOpened}>
                         <Modal.Header>
                             Register
                         </Modal.Header>
@@ -175,7 +182,7 @@ class Home extends Component {
                                 </Form.Field>
                                 <Form.Field>
                                     <label>Username</label>
-                                    <input placeholder='Username' onChange={(e) => this.setState({ username: e.target.value })} onBlur={() => this.usernameCheck()} />
+                                    <input placeholder='Username' onChange={(e) => this.usernameCheck(e.target.value)} onBlur={() => this.usernameCheck()} />
                                 </Form.Field>
                                 <Message negative floating hidden={!this.state.usernameMessage}>
                                     <Message.Header>Username taken</Message.Header>
@@ -198,10 +205,10 @@ class Home extends Component {
                         <Modal.Actions>
                             <Button color='green' onClick={() => this.register()}>
                                 <Icon name='checkmark' /> Register
-                                        </Button>
-                            <Button color='red'>
+                            </Button>
+                            <Button color='red' onClick={() => this.closeModal()}>
                                 <Icon name='ban' /> Cancel
-                                         </Button>
+                            </Button>
                         </Modal.Actions>
                     </Modal>
                 </Segment>

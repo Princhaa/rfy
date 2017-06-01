@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import AppBar from '../components/AppBar';
 import { Segment, Header, Image, Button, Form, Card, Input, Item, Label, Modal, Icon } from 'semantic-ui-react';
+import { Link } from 'react-router-dom';
 
 const items = ['Item 1', 'Item 2', 'Item 3'];
 const furirin = require('../assets/furirin.jpg');
@@ -12,7 +13,12 @@ export default class Profile extends Component {
 
     state = {
         isProfileEditable: false,
-        firstName: 'Furihata'
+        firstName: 'Furihata',
+        messageModalOpened: false
+    }
+
+    goToPost() {
+        this.props.history.push('/post');
     }
 
     render() {
@@ -55,6 +61,27 @@ export default class Profile extends Component {
                                         </Modal.Actions>
                                     </Modal>
                                 </Segment>
+                                <Segment>
+                                    <Button primary fluid onClick={() => this.setState({ messageModalOpened: true })}>Message</Button>
+                                    <Modal open={this.state.messageModalOpened}>
+                                        <Modal.Header>
+                                            Message User
+                                        </Modal.Header>
+                                        <Modal.Content>
+                                            <Form>
+                                                <Form.TextArea />
+                                            </Form>
+                                        </Modal.Content>
+                                        <Modal.Actions>
+                                            <Button color='green'>
+                                                <Icon name='send' /> Send
+                                            </Button>
+                                            <Button color='red' onClick={() => this.setState({ messageModalOpened: false })}>
+                                                <Icon name='ban' /> Cancel
+                                            </Button>
+                                        </Modal.Actions>
+                                    </Modal>
+                                </Segment>
                                 <Header as='h4' attached='top'>
                                     Latest Messages
                                 </Header>
@@ -82,6 +109,7 @@ export default class Profile extends Component {
                                         </Item>
                                     </Item.Group>
                                 </Segment>
+
                             </div>
                             <div style={styles.right}>
                                 <Header as='h2' attached='top'>Personal data</Header>
@@ -129,20 +157,20 @@ export default class Profile extends Component {
                                     </div>
                                     <div>
                                         <Card.Group>
-                                            <Card>
+                                            <Card style={styles.card} onClick={() => this.goToPost()}>
                                                 <Image src={majalah} />
                                                 <Card.Content>
                                                     <Card.Header>
                                                         Young Weekly Jump
-                                                    </Card.Header>
+                                                        </Card.Header>
                                                     <Card.Meta>
                                                         <span className='date'>
                                                             Rp. 200.000,-
-                                                        </span>
+                                                            </span>
                                                     </Card.Meta>
                                                     <Card.Description>
                                                         Featuring Aqours voice actress
-                                                    </Card.Description>
+                                                        </Card.Description>
                                                 </Card.Content>
                                             </Card>
                                             <Card>
@@ -310,5 +338,9 @@ const styles = {
         flex: 9,
         marginLeft: 20,
         width: '100%'
+    },
+
+    card: {
+        cursor: 'pointer'
     }
 }
