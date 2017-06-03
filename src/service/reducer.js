@@ -1,5 +1,5 @@
 import { combineReducers } from 'redux';
-import { SET_LOGIN_STATE, setLoginState } from './action';
+import { SET_LOGIN_STATE, setLoginState, SET_TOKEN, setToken } from './action';
 
 function loginState(state = '', action){
     switch(action.type){
@@ -7,6 +7,17 @@ function loginState(state = '', action){
             return action.loginState
         }
         default : {
+            return state
+        }
+    }
+}
+
+function token(state = '', action){
+    switch(action.type){
+        case SET_TOKEN : {
+            return action.token
+        }
+        default: {
             return state
         }
     }

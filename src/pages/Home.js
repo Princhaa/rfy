@@ -7,7 +7,7 @@ import config from '../config/config';
 import AppBar from '../components/AppBar';
 import '../App.css';
 import store from '../service/store';
-import { setLoginState } from '../service/action';
+import { setLoginState, setToken } from '../service/action';
 
 const majalah = require('../assets/majalah.jpg');
 const furirin = require('../assets/furirin.jpg');
@@ -61,25 +61,35 @@ class Home extends Component {
         lastname: '',
         email: '',
         confirmpassword: '',
-        registerModalOpened: false
+        registerModalOpened: false,
+        registrationStatusMessage: false
     }
 
     register() {
-        this.setState({ isRegistering: true });
-        fetch('http://192.168.88.6:12345/register', {
+        console.log(this.state);
+        fetch(config.SERVER_IP + '/api/register', {
             method: 'POST',
+            headers: {
+                'Content-type': 'application/json'
+            },
             body: JSON.stringify({
-                firstname: this.firstname.value,
-                lastname: this.lastname.value,
-                username: this.username.value,
-                email: this.email.value,
-                password: this.password.value
+                username: this.state.username,
+                password: this.state.password,
+                firstname: this.state.firstname,
+                lastname: this.state.lastname,
+                email: this.state.email,
             })
         }).then((response) => {
             if (response.status == 200) {
-                this.setState = ({ isRegistering: false })
+                this.setState({ registrationStatusMessage: true, registerModalOpened: false });
+                return response.json();
             } else {
                 console.log(response.status);
+            }
+        }).then((responseJson) => {
+            console.log(responseJson);
+            if (responseJson.success == false) {
+                alert('Register failed');
             }
         })
     }
@@ -87,7 +97,7 @@ class Home extends Component {
     async login() {
         console.log(this.state)
         this.setState({ isRegistering: true });
-        fetch('http://192.168.88.6:12345/login', {
+        fetch(config.SERVER_IP + '/api/authenticate', {
             method: 'POST',
             headers: {
                 'Content-type': 'application/json'
@@ -106,6 +116,8 @@ class Home extends Component {
                     console.log(responseJson);
                     this.setState({ isRegistering: false });
                     store.dispatch(setLoginState('logged_in'));
+                    console.log(responseJson.token);
+                    store.dispatch(setToken(responseJson.token));
                     this.props.history.push('/profile');
                 }
                 else {
@@ -114,11 +126,9 @@ class Home extends Component {
             }).catch(console.log)
     }
 
-    usernameCheck(e) {
-        this.setState({ username: e });
-        console.log(e);
+    usernameCheck() {
         console.log(this.state.username);
-        fetch('http://192.168.88.6:12345/check-username', {
+        fetch(config.SERVER_IP + '/api/check-username', {
             method: 'POST',
             headers: {
                 'Content-type': 'application/json'
@@ -140,7 +150,7 @@ class Home extends Component {
             })
     }
 
-    closeModal(){
+    closeModal() {
         this.setState({ registerModalOpened: false })
     }
 
@@ -166,7 +176,7 @@ class Home extends Component {
                         <p>Please check your username and password</p>
                     </Message>
                     <Divider horizontal>OR</Divider>
-                    <Modal trigger={<Button secondary fluid onClick = {() => this.setState({ registerModalOpened: true })}>Register</Button>} open = {this.state.registerModalOpened}>
+                    <Modal trigger={<Button secondary fluid onClick={() => this.setState({ registerModalOpened: true })}>Register</Button>} open={this.state.registerModalOpened}>
                         <Modal.Header>
                             Register
                         </Modal.Header>
@@ -182,7 +192,7 @@ class Home extends Component {
                                 </Form.Field>
                                 <Form.Field>
                                     <label>Username</label>
-                                    <input placeholder='Username' onChange={(e) => this.usernameCheck(e.target.value)} onBlur={() => this.usernameCheck()} />
+                                    <input placeholder='Username' onChange={(e) => this.setState({ username: e.target.value })} onBlur={() => this.usernameCheck()} />
                                 </Form.Field>
                                 <Message negative floating hidden={!this.state.usernameMessage}>
                                     <Message.Header>Username taken</Message.Header>
@@ -190,11 +200,11 @@ class Home extends Component {
                                 </Message>
                                 <Form.Field>
                                     <label>Email</label>
-                                    <input placeholder='Email' ref={(email) => this.email = email} />
+                                    <input placeholder='Email' onChange={(e) => this.setState({ email: e.target.value })} />
                                 </Form.Field>
                                 <Form.Field>
                                     <label>Password</label>
-                                    <input placeholder='Password' type='password' ref={(password) => this.password = password} />
+                                    <input placeholder='Password' type='password' onChange={(e) => this.setState({ password: e.target.value })} />
                                 </Form.Field>
                                 <Form.Field>
                                     <label>Confirm password</label>
@@ -211,9 +221,47 @@ class Home extends Component {
                             </Button>
                         </Modal.Actions>
                     </Modal>
+                    <Message positive floating hidden={!this.state.registrationStatusMessage}>
+                        <Message.Header>Register success!</Message.Header>
+                        <p>Please login from form above</p>
+                    </Message>
                 </Segment>
             )
         }
+    }
+
+    getPosts() {
+        return fetch(config.SERVER_IP + '/api/post-list', {
+            method: 'GET'
+        }).then((response) => response.json())
+            .then((responseJson) => {
+                console.log(responseJson)
+                return responseJson.map(function (post, index) {
+                    console.log(post);
+                    return (
+                        <Card key={index}>
+                            <Image src={majalah} />
+                            <Card.Content>
+                                <Card.Header>
+                                    {post.title}
+                                </Card.Header>
+                                <Card.Meta>
+                                    <span className='date'>
+                                        Rp. {post.price}
+                                    </span>
+                                </Card.Meta>
+                                <Card.Description>
+                                    {post.description}
+                                </Card.Description>
+                            </Card.Content>
+                        </Card>
+                    )
+                })
+            })
+    }
+
+    renderPost(posts) {
+
     }
 
     render() {
@@ -242,136 +290,24 @@ class Home extends Component {
                             </Header>
                             <Segment>
                                 <div>
-                                    <Card.Group>
-                                        <Card>
-                                            <Image src={majalah} />
-                                            <Card.Content>
-                                                <Card.Header>
-                                                    Young Weekly Jump
-                                                        </Card.Header>
-                                                <Card.Meta>
-                                                    <span className='date'>
-                                                        Rp. 200.000,-
-                                                    </span>
-                                                </Card.Meta>
-                                                <Card.Description>
-                                                    Featuring Aqours voice actress
-                                                </Card.Description>
-                                            </Card.Content>
-                                        </Card>
-                                        <Card>
-                                            <Image src={majalah} />
-                                            <Card.Content>
-                                                <Card.Header>
-                                                    Young Weekly Jump Gold Edition
-                                                </Card.Header>
-                                                <Card.Meta>
-                                                    <span className='date'>
-                                                        Rp. 500.000,-
-                                                    </span>
-                                                </Card.Meta>
-                                                <Card.Description>
-                                                    Featuring Aqours voice actress and more
-                                                </Card.Description>
-                                            </Card.Content>
-                                        </Card>
-                                        <Card>
-                                            <Image src={majalah} />
-                                            <Card.Content>
-                                                <Card.Header>
-                                                    Young Weekly Jump
-                                                </Card.Header>
-                                                <Card.Meta>
-                                                    <span className='date'>
-                                                        Rp. 200.000,-
-                                                    </span>
-                                                </Card.Meta>
-                                                <Card.Description>
-                                                    Featuring Aqours voice actress
-                                                </Card.Description>
-                                            </Card.Content>
-                                        </Card>
-                                        <Card>
-                                            <Image src={majalah} />
-                                            <Card.Content>
-                                                <Card.Header>
-                                                    Young Weekly Jump Gold Edition
-                                                </Card.Header>
-                                                <Card.Meta>
-                                                    <span className='date'>
-                                                        Rp. 500.000,-
-                                                    </span>
-                                                </Card.Meta>
-                                                <Card.Description>
-                                                    Featuring Aqours voice actress and more
-                                                </Card.Description>
-                                            </Card.Content>
-                                        </Card>
-                                        <Card>
-                                            <Image src={majalah} />
-                                            <Card.Content>
-                                                <Card.Header>
-                                                    Young Weekly Jump
-                                                </Card.Header>
-                                                <Card.Meta>
-                                                    <span className='date'>
-                                                        Rp. 200.000,-
-                                                    </span>
-                                                </Card.Meta>
-                                                <Card.Description>
-                                                    Featuring Aqours voice actress
-                                                </Card.Description>
-                                            </Card.Content>
-                                        </Card>
-                                        <Card>
-                                            <Image src={majalah} />
-                                            <Card.Content>
-                                                <Card.Header>
-                                                    Young Weekly Jump Gold Edition
-                                                </Card.Header>
-                                                <Card.Meta>
-                                                    <span className='date'>
-                                                        Rp. 500.000,-
-                                                    </span>
-                                                </Card.Meta>
-                                                <Card.Description>
-                                                    Featuring Aqours voice actress and more
-                                                </Card.Description>
-                                            </Card.Content>
-                                        </Card>
-                                        <Card>
-                                            <Image src={majalah} />
-                                            <Card.Content>
-                                                <Card.Header>
-                                                    Young Weekly Jump
-                                                </Card.Header>
-                                                <Card.Meta>
-                                                    <span className='date'>
-                                                        Rp. 200.000,-
-                                                    </span>
-                                                </Card.Meta>
-                                                <Card.Description>
-                                                    Featuring Aqours voice actress
-                                                </Card.Description>
-                                            </Card.Content>
-                                        </Card>
-                                        <Card>
-                                            <Image src={majalah} />
-                                            <Card.Content>
-                                                <Card.Header>
-                                                    Young Weekly Jump Gold Edition
-                                                </Card.Header>
-                                                <Card.Meta>
-                                                    <span className='date'>
-                                                        Rp. 500.000,-
-                                                    </span>
-                                                </Card.Meta>
-                                                <Card.Description>
-                                                    Featuring Aqours voice actress and more
-                                                </Card.Description>
-                                            </Card.Content>
-                                        </Card>
-                                    </Card.Group>
+                                    <Card>
+                                        <Image src={majalah} />
+                                        <Card.Content>
+                                            <Card.Header>
+                                                rfgrf
+                                            </Card.Header>
+                                            <Card.Meta>
+                                                <span className='date'>
+                                                    Rp. fr
+                                                </span>
+                                            </Card.Meta>
+                                            <Card.Description>
+                                                fr
+                                            </Card.Description>
+                                        </Card.Content>
+                                    </Card>
+                                    {this.getPosts()}
+
                                 </div>
                             </Segment>
                         </div>
