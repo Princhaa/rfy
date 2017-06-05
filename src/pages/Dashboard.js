@@ -84,7 +84,6 @@ export default class Dashboard extends Component {
                                         Pending posts
                                     </Menu.Item>
                                     <Menu.Item name='users' active={activeItem === 'users'} onClick={this.handleItemClick}>
-                                        <Label>51</Label>
                                         Users list
                                     </Menu.Item>
                                 </Menu>

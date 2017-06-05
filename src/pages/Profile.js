@@ -3,6 +3,9 @@ import AppBar from '../components/AppBar';
 import { Segment, Header, Image, Button, Form, Card, Input, Item, Label, Modal, Icon } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
 
+import store from '../service/store';
+import { setPostId } from '../service/action';
+
 const items = ['Item 1', 'Item 2', 'Item 3'];
 const furirin = require('../assets/furirin.jpg');
 const majalah = require('../assets/majalah.jpg');
@@ -18,6 +21,7 @@ export default class Profile extends Component {
     }
 
     goToPost() {
+        store.dispatch(setPostId('592cd7ac068496300dcfe3e5'));
         this.props.history.push('/post');
     }
 

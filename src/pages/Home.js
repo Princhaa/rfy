@@ -7,7 +7,7 @@ import config from '../config/config';
 import AppBar from '../components/AppBar';
 import '../App.css';
 import store from '../service/store';
-import { setLoginState, setToken } from '../service/action';
+import { setLoginState, setToken, setUserId, setPostId } from '../service/action';
 
 const majalah = require('../assets/majalah.jpg');
 const furirin = require('../assets/furirin.jpg');
@@ -31,7 +31,7 @@ const styles = {
     },
 
     left: {
-        flex: 10,
+        flex: 8,
         marginRight: 20,
     },
 
@@ -62,7 +62,12 @@ class Home extends Component {
         email: '',
         confirmpassword: '',
         registerModalOpened: false,
-        registrationStatusMessage: false
+        registrationStatusMessage: false,
+        postsLists: []
+    }
+
+    componentWillMount() {
+        this.getPosts();
     }
 
     register() {
@@ -118,6 +123,8 @@ class Home extends Component {
                     store.dispatch(setLoginState('logged_in'));
                     console.log(responseJson.token);
                     store.dispatch(setToken(responseJson.token));
+                    console.log(responseJson.id);
+                    store.dispatch(setUserId(responseJson.id));
                     this.props.history.push('/profile');
                 }
                 else {
@@ -236,32 +243,49 @@ class Home extends Component {
         }).then((response) => response.json())
             .then((responseJson) => {
                 console.log(responseJson)
-                return responseJson.map(function (post, index) {
-                    console.log(post);
-                    return (
-                        <Card key={index}>
-                            <Image src={majalah} />
-                            <Card.Content>
-                                <Card.Header>
-                                    {post.title}
-                                </Card.Header>
-                                <Card.Meta>
-                                    <span className='date'>
-                                        Rp. {post.price}
-                                    </span>
-                                </Card.Meta>
-                                <Card.Description>
-                                    {post.description}
-                                </Card.Description>
-                            </Card.Content>
-                        </Card>
-                    )
-                })
+                this.setState({
+                    postsLists: responseJson.map((post, index) => {
+                        return {
+                            id: post._id,
+                            cardKey: index,
+                            imageSrc: majalah,
+                            postTitle: post.title,
+                            postPrice: post.price,
+                            postDescription: post.description
+                        }
+                    })
+                });
             })
     }
 
-    renderPost(posts) {
+    gotoPost(id){
+        store.dispatch(setPostId(id));
+        this.props.history.push('/post');
+    }
 
+    renderPost() {
+        let posts = this.state.postsLists;
+        return posts.map((post, index) => {
+            console.log(post)
+            return (
+                <Card onClick = {() => this.gotoPost(post.id)}>
+                    <Image src={majalah} />
+                    <Card.Content>
+                        <Card.Header>
+                            {post.postTitle}
+                        </Card.Header>
+                        <Card.Meta>
+                            <span className='date'>
+                                Rp. {post.postPrice}
+                            </span>
+                        </Card.Meta>
+                        <Card.Description>
+                            {post.postDescription}
+                        </Card.Description>
+                    </Card.Content>
+                </Card>
+            )
+        })
     }
 
     render() {
@@ -289,26 +313,9 @@ class Home extends Component {
                                 Featured Products
                             </Header>
                             <Segment>
-                                <div>
-                                    <Card>
-                                        <Image src={majalah} />
-                                        <Card.Content>
-                                            <Card.Header>
-                                                rfgrf
-                                            </Card.Header>
-                                            <Card.Meta>
-                                                <span className='date'>
-                                                    Rp. fr
-                                                </span>
-                                            </Card.Meta>
-                                            <Card.Description>
-                                                fr
-                                            </Card.Description>
-                                        </Card.Content>
-                                    </Card>
-                                    {this.getPosts()}
-
-                                </div>
+                                <Card.Group>
+                                    {this.renderPost()}
+                                </Card.Group>
                             </Segment>
                         </div>
                         <div style={styles.right}>

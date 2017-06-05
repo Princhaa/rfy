@@ -44,6 +44,7 @@ class AppBar extends Component {
     }
 
     render() {
+        let date = new Date();
         return (
             <div style={styles.container}>
                 <div headers style={styles.headers}>
@@ -52,6 +53,9 @@ class AppBar extends Component {
                         {this.getContent()}
                         <div style={styles.buttons}>
                             {this.getButton()}
+                            {date.getDate()}-
+                            {date.getMonth()}- 
+                            {date.getFullYear()}
                         </div>
                     </div>
                 </div>
