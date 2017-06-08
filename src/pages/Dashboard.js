@@ -80,7 +80,6 @@ export default class Dashboard extends Component {
                             <div style={styles.left}>
                                 <Menu vertical fluid pointing>
                                     <Menu.Item name='posts' active={activeItem === 'posts'} onClick={this.handleItemClick}>
-                                        <Label color='teal'>1</Label>
                                         Pending posts
                                     </Menu.Item>
                                     <Menu.Item name='users' active={activeItem === 'users'} onClick={this.handleItemClick}>

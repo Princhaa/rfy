@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
 import { Header, Segment, Button, Table } from 'semantic-ui-react';
+import { connect } from 'react-redux';
 
 import config from '../config/config';
 
-export default class PendingPosts extends Component {
+class PendingPosts extends Component {
 
     state = {
         posts: []
@@ -14,8 +15,11 @@ export default class PendingPosts extends Component {
     }
 
     getPost() {
-        return fetch(config.SERVER_IP + '/api/post-list', {
-            method: 'GET'
+        return fetch(config.SERVER_IP + '/api/approved-post-list', {
+            method: 'GET',
+            headers: {
+                'Authorization' : this.props.token
+            }
         }).then((response) => response.json())
             .then((response) => {
                 this.setState({
@@ -29,9 +33,26 @@ export default class PendingPosts extends Component {
                     })
                 })
             })
+    }
 
-
-
+    approvePost(postId){
+        fetch(config.SERVER_IP+'/api/approve-post', {
+            method: 'POST',
+            headers: {
+                'Content-Type' : 'application/json',
+                'Authorization' : this.props.token
+            },
+            body: JSON.stringify({
+                postId: postId
+            })
+        }).then((response) => response.json())
+        .then((responseJson) => {
+            if (responseJson.success == true) {
+                this.getPost()
+            } else {
+                console.log(responseJson)
+            }
+        })
     }
 
     renderPost() {
@@ -44,7 +65,7 @@ export default class PendingPosts extends Component {
                     <Table.Cell>{posts.creator}</Table.Cell>
                     <Table.Cell>
                         <Button.Group fluid>
-                            <Button positive>Approve</Button>
+                            <Button positive onClick = {() => this.approvePost(posts.id)}>Approve</Button>
                             <Button negative>Reject</Button>
                         </Button.Group>
                     </Table.Cell>
@@ -75,22 +96,17 @@ export default class PendingPosts extends Component {
                         <Table.Body>
                             {this.renderPost()}
                         </Table.Body>
-
-                        <Table.Footer>
-                            <Table.Row>
-                                <Table.HeaderCell colSpan='4'>
-                                    <Button floated='right' negative>
-                                        Reject all
-                                                    </Button>
-                                    <Button floated='right' primary>
-                                        Approve all
-                                                    </Button>
-                                </Table.HeaderCell>
-                            </Table.Row>
-                        </Table.Footer>
                     </Table>
                 </Segment>
             </div>
         )
     }
 }
+
+const mapStateToProps = (state) => {
+    return{
+        token: state.token
+    }    
+}
+
+export default connect(mapStateToProps)(PendingPosts);

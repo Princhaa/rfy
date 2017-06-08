@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Header, Segment, Image, Item, Comment, Form, Button, Modal, Icon } from 'semantic-ui-react';
+import { Header, Segment, Image, Item, Comment, Form, Button, Modal, Icon, Message } from 'semantic-ui-react';
 import { connect } from 'react-redux';
 
 import AppBar from '../components/AppBar';
@@ -23,11 +23,17 @@ class Post extends Component {
             firstname: '',
             lastname: '',
             email: ''
-        }
+        },
+        messageModalOpened: false,
+        sentMessage: false,
+        loginMessage: false,
+        comments: [],
+        commentLoginMessage: false
     }
 
     componentWillMount() {
         this.getPostDetail();
+        this.getComments();
     }
 
     getPostDetail() {
@@ -42,18 +48,112 @@ class Post extends Component {
                 _id: this.props.postId
             })
         }).then((response) => response.json())
-        .then((responseJson) => {
-            let price;
-            responseJson.price = responseJson.price / 1000;
-            price = responseJson.price+'.000';
-            this.setState({
-                price: price,
-                description: responseJson.description,
-                title: responseJson.title,
-                sold: responseJson.sold,
-                creator: responseJson._creator
-            });
+            .then((responseJson) => {
+                console.log(responseJson);
+                let price;
+                responseJson.price = responseJson.price / 1000;
+                price = responseJson.price + '.000';
+                this.setState({
+                    price: price,
+                    description: responseJson.description,
+                    title: responseJson.title,
+                    sold: responseJson.sold,
+                    creator: responseJson._creator,
+                    image: responseJson.image
+                });
+            })
+    }
+
+    getComments() {
+        fetch(config.SERVER_IP + '/api/get-post-comments', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': this.props.token
+            },
+            body: JSON.stringify({
+                _id: this.props.postId
+            })
+        }).then((response) => response.json())
+            .then((responseJson) => {
+                console.log(responseJson);
+                this.setState({
+                    comments: responseJson.map((comment, index) => {
+                        return {
+                            content: comment.content,
+                            creator: comment._creator
+                        }
+                    })
+                })
+            })
+    }
+
+    sendMessage() {
+        this.setState({ messageModalOpened: false });
+        fetch(config.SERVER_IP + '/api/new-message', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': this.props.token
+            },
+            body: JSON.stringify({
+                _receiver: this.state.creator._id,
+                message: this.state.message
+            })
+        }).then((response) => response.json())
+            .then((responseJson) => {
+                if (responseJson.success == true) {
+                    this.setState({ sentMessage: true })
+                } else {
+                    console.log(responseJson);
+                }
+            })
+    }
+
+    openMessageModal() {
+        if (this.props.loginState == 'logged_in') {
+            this.setState({ messageModalOpened: true })
+        } else {
+            this.setState({ loginMessage: true })
+        }
+    }
+
+    renderComments() {
+        let comments = this.state.comments;
+        return comments.map((comment, index) => {
+            return (
+                <Comment>
+                    <Comment.Avatar src={`${config.SERVER_IP}/static${comment.creator.picture}`} />
+                    <Comment.Content>
+                        <Comment.Author as='a'>{comment.creator.firstname} {comment.creator.lastname}</Comment.Author>
+                        <Comment.Text>{comment.content}</Comment.Text>
+                    </Comment.Content>
+                </Comment>
+            )
         })
+    }
+
+    sendComment() {
+        if (this.props.loginState == 'logged_in') {
+            fetch(config.SERVER_IP + '/api/post-new-comment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': this.props.token
+                },
+                body: JSON.stringify({
+                    content: this.state.addComment,
+                    _id: this.props.postId
+                })
+            }).then((response) => response.json())
+                .then((responseJson) => {
+                    console.log(responseJson);
+                    this.getComments();
+                })
+        }
+        else {
+            this.setState({ commentLoginMessage: true });
+        }
     }
 
     render() {
@@ -73,34 +173,35 @@ class Post extends Component {
                         <div style={styles.content}>
                             <div style={styles.left}>
                                 <Segment attached>
-                                    <Image src={majalah} />
+                                    <Image src={`${config.SERVER_IP}/static${this.state.image}`} />
                                 </Segment>
                                 <Segment attached>
                                     <Header as='h3'>Posted by</Header>
                                     <div style={styles.profile}>
                                         <div style={styles.sellerPicture}>
-                                            <Image src={furirin} shape='circular' />
+                                            <Image src={`${config.SERVER_IP}/static${this.state.creator.picture}`} shape='circular' />
                                         </div>
                                         <div style={styles.sellerDetail}>
                                             <Header as='h4'>
-                                                {this.state.creator.firstname+" "+this.state.creator.lastname}
+                                                {this.state.creator.firstname + " " + this.state.creator.lastname}
                                             </Header>
                                             {this.state.creator.email}
                                         </div>
                                     </div>
                                 </Segment>
                                 <Segment attached='bottom'>
-                                    <Modal trigger = {<Button primary fluid>Contact seller</Button>}>
+                                    <Button primary fluid onClick={() => this.openMessageModal()}>Contact seller</Button>
+                                    <Modal open={this.state.messageModalOpened}>
                                         <Modal.Header>
                                             Message User
                                         </Modal.Header>
                                         <Modal.Content>
                                             <Form>
-                                                <Form.TextArea />
+                                                <Form.TextArea onChange={(e) => this.setState({ message: e.target.value })} />
                                             </Form>
                                         </Modal.Content>
                                         <Modal.Actions>
-                                            <Button color='green'>
+                                            <Button color='green' onClick={() => this.sendMessage()}>
                                                 <Icon name='send' /> Send
                                             </Button>
                                             <Button color='red' onClick={() => this.setState({ messageModalOpened: false })}>
@@ -108,6 +209,14 @@ class Post extends Component {
                                             </Button>
                                         </Modal.Actions>
                                     </Modal>
+                                    <Message success floating hidden={!this.state.sentMessage}>
+                                        <Message.Header>Message sent</Message.Header>
+                                        <p>Your message has been sent!</p>
+                                    </Message>
+                                    <Message negative floating hidden={!this.state.loginMessage}>
+                                        <Message.Header>Not logged in</Message.Header>
+                                        <p>You have to be logged in to send messages</p>
+                                    </Message>
                                 </Segment>
                             </div>
                             <div style={styles.right}>
@@ -123,40 +232,17 @@ class Post extends Component {
                                 <div style={styles.comments}>
                                     <Comment.Group style={styles.commentGroup}>
                                         <Header as='h3' dividing>Comments</Header>
-                                        <Comment>
-                                            <Comment.Avatar src={rikyako} />
-                                            <Comment.Content>
-                                                <Comment.Author as='a'>Aida Rikako</Comment.Author>
-                                                <Comment.Metadata>
-                                                    <div>Today at 5:42PM</div>
-                                                </Comment.Metadata>
-                                                <Comment.Text>Wow! Finally this came out!</Comment.Text>
-                                                <Comment.Actions>
-                                                    <Comment.Action>Reply</Comment.Action>
-                                                </Comment.Actions>
-                                            </Comment.Content>
-                                        </Comment>
-                                        <Comment>
-                                            <Comment.Avatar src={suwawa} />
-                                            <Comment.Content>
-                                                <Comment.Author as='a'>Suwa Nanaka</Comment.Author>
-                                                <Comment.Metadata>
-                                                    <div>Yesterday at 12:30AM</div>
-                                                </Comment.Metadata>
-                                                <Comment.Text>
-                                                    <p>Thanks man! It arrived safely</p>
-                                                </Comment.Text>
-                                                <Comment.Actions>
-                                                    <Comment.Action>Reply</Comment.Action>
-                                                </Comment.Actions>
-                                            </Comment.Content>
-                                        </Comment>
-                                        <Form reply>
-                                            <Form.TextArea />
-                                            <Button content='Add Reply' labelPosition='left' icon='edit' primary />
+                                        {this.renderComments()}
+                                        <Form>
+                                            <Form.TextArea onChange={(e) => this.setState({ addComment: e.target.value })} />
                                         </Form>
+                                        <Button content='Add Reply' labelPosition='left' icon='edit' primary onClick={() => this.sendComment()} />
                                     </Comment.Group>
                                 </div>
+                                <Message negative floating hidden={!this.state.commentLoginMessage}>
+                                    <Message.Header>Not logged in</Message.Header>
+                                    <p>You have to be logged in to send comment</p>
+                                </Message>
                             </div>
                         </div>
                     </div>
@@ -236,7 +322,8 @@ const styles = {
 const mapStateToProps = (state) => {
     return {
         postId: state.postId,
-        token: state.token
+        token: state.token,
+        loginState: state.loginState
     }
 }
 

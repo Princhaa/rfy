@@ -1,5 +1,16 @@
 import { combineReducers } from 'redux';
-import { SET_LOGIN_STATE, setLoginState, SET_TOKEN, setToken, SET_USER_ID, setUserId, SET_POST_ID, setPostId } from './action';
+import { 
+    SET_LOGIN_STATE, 
+    setLoginState, 
+    SET_TOKEN, 
+    setToken, 
+    SET_USER_ID, 
+    setUserId, 
+    SET_POST_ID, 
+    setPostId, 
+    SET_USER_PRIVILEGE, 
+    setUserPrivilege 
+} from './action';
 
 function loginState(state = '', action){
     switch(action.type){
@@ -45,11 +56,24 @@ function postId(state = '', action){
     }
 }
 
+function userPrivilege(state = '', action){
+    switch(action.type) {
+        case SET_USER_PRIVILEGE : {
+            return action.userPrivilege
+        }
+        default : {
+            return state;
+
+        }
+    }
+}
+
 const rfyApp = combineReducers({
     loginState,
     token,
     userId,
-    postId
+    postId,
+    userPrivilege
 });
 
 export default rfyApp;

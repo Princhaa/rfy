@@ -68,6 +68,31 @@ class Home extends Component {
 
     componentWillMount() {
         this.getPosts();
+        if (this.props.loginState == true) {
+            this.getUserInfo();
+        }
+    }
+
+    componentWillReceiveProps(nextProps){
+        this.getUserInfo();
+    }
+
+    getUserInfo() {
+        return fetch(config.SERVER_IP + '/api/my-profile', {
+            method: 'GET',
+            headers: {
+                'Authorization': this.props.token
+            }
+        }).then((response) => response.json())
+            .then((responseJson) => {
+                console.log(responseJson);
+                this.setState({
+                    firstname: responseJson.firstname,
+                    lastname: responseJson.lastname,
+                    picture: responseJson.picture
+                })
+            })
+
     }
 
     register() {
@@ -117,7 +142,7 @@ class Home extends Component {
                 if (response.status == 200) return response.json();
             })
             .then((responseJson) => {
-                if (responseJson != undefined) {
+                if (responseJson.success == true) {
                     console.log(responseJson);
                     this.setState({ isRegistering: false });
                     store.dispatch(setLoginState('logged_in'));
@@ -163,11 +188,12 @@ class Home extends Component {
 
     getHomeForm() {
         if (this.props.loginState == 'logged_in') {
+            this.getUserInfo();
             return (
                 <Segment attached>
-                    <Image src={furirin} size='medium' shape='circular' />
-                    <Header as='h2'>Furihata Ai</Header>
-                    <Button fluid primary>Edit profile</Button>
+                    <Image src={`${config.SERVER_IP}/static${this.state.picture}?` + new Date().getTime()} size='medium' shape='circular' />
+                    <Header as='h2'>{this.state.firstname} {this.state.lastname}</Header>
+                    <Button fluid primary onClick={() => this.props.history.push('/profile')}>Edit profile</Button>
                 </Segment>
             )
         } else {
@@ -238,7 +264,7 @@ class Home extends Component {
     }
 
     getPosts() {
-        return fetch(config.SERVER_IP + '/api/post-list', {
+        return fetch(config.SERVER_IP + '/api/home-post-list', {
             method: 'GET'
         }).then((response) => response.json())
             .then((responseJson) => {
@@ -248,7 +274,7 @@ class Home extends Component {
                         return {
                             id: post._id,
                             cardKey: index,
-                            imageSrc: majalah,
+                            imageSrc: post.image,
                             postTitle: post.title,
                             postPrice: post.price,
                             postDescription: post.description
@@ -258,7 +284,7 @@ class Home extends Component {
             })
     }
 
-    gotoPost(id){
+    gotoPost(id) {
         store.dispatch(setPostId(id));
         this.props.history.push('/post');
     }
@@ -268,8 +294,8 @@ class Home extends Component {
         return posts.map((post, index) => {
             console.log(post)
             return (
-                <Card onClick = {() => this.gotoPost(post.id)}>
-                    <Image src={majalah} />
+                <Card onClick={() => this.gotoPost(post.id)}>
+                    <Image src={`${config.SERVER_IP}/static${post.imageSrc}`} />
                     <Card.Content>
                         <Card.Header>
                             {post.postTitle}
@@ -323,9 +349,6 @@ class Home extends Component {
                                 {this.props.loginState == 'logged_in' ? 'Profile' : 'Login'}
                             </Header>
                             {this.getHomeForm()}
-                            <Segment>
-                                Lorem ipsum dolor sit amet
-                            </Segment>
                         </div>
                     </div>
                 </div>
@@ -336,7 +359,8 @@ class Home extends Component {
 
 const mapStateToProps = (state) => {
     return {
-        loginState: state.loginState
+        loginState: state.loginState,
+        token: state.token
     }
 }
 

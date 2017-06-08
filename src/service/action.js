@@ -2,6 +2,7 @@ export const SET_LOGIN_STATE = 'SET_LOGIN_STATE';
 export const SET_TOKEN = 'SET_TOKEN';
 export const SET_USER_ID = 'SET_USER_ID';
 export const SET_POST_ID = 'SET_POST_ID';
+export const SET_USER_PRIVILEGE = 'SET_USER_PRIVILEGE';
 
 export function setLoginState(loginState){
     return {
@@ -28,5 +29,12 @@ export function setPostId(postId){
     return {
         type: SET_POST_ID,
         postId
+    }
+}
+
+export function setUserPrivilege(userPrivilege){
+    return {
+        type: SET_USER_PRIVILEGE,
+        userPrivilege
     }
 }

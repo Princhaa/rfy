@@ -6,21 +6,30 @@ import { connect } from 'react-redux';
 import { setLoginState } from '../service/action';
 import store from '../service/store';
 
+var menu = ['Home'];
+
 class AppBar extends Component {
 
-    static propTypes = {
-        menus: PropTypes.array
-    }
-
     getContent() {
-        return this.props.menus.map((menu, i) => {
+        if (this.props.loginState == 'logged_in') {
+            menu = ['Home', 'Profile']
+        }
+        return menu.map((menu, i) => {
             return (
-                <a className='item' style={styles.menuItem} key={i} onClick={() => { alert(menu) }}>
+                <a className='item' style={styles.menuItem} key={i} onClick={() => { this.gotoPage(menu) }}>
                     {menu}
                 </a>
             )  
             }   
         )
+    }
+
+    gotoPage(menu) {
+        switch(menu) {
+            case 'Home' : this.props.history.push('/'); break;
+            case 'Profile' : this.props.history.push('/profile'); break;
+        }
+        
     }
 
     logout() {
@@ -32,7 +41,7 @@ class AppBar extends Component {
         if (this.props.loginState == 'logged_in'){
             return(
                 <div>
-                    <Link to='/dashboard'><Button color='orange'>Dashboard</Button></Link>
+                    {this.props.userPrivilege == true ? <Link to='/dashboard'><Button color='orange'>Dashboard</Button></Link> : null}
                     <Button negative onClick = {() => this.logout()}>Logout</Button>
                 </div>
             )
@@ -130,7 +139,8 @@ const styles = {
 const mapStateToProps = (state) => {
     console.log(state);
     return{
-        loginState: state.loginState
+        loginState: state.loginState,
+        userPrivilege: state.userPrivilege
     }
 }
 

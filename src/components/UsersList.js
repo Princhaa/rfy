@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
 import { Header, Segment, Button, Table } from 'semantic-ui-react';
+import { connect } from 'react-redux';
 
 import config from '../config/config';
 
-export default class UsersList extends Component {
+class UsersList extends Component {
 
     state = {
         users: []
@@ -32,6 +33,26 @@ export default class UsersList extends Component {
             })
     }
 
+    delete(id) {
+        return fetch(config.SERVER_IP+'/api/delete-user', {
+            method: 'POST',
+            headers: {
+                'Content-Type' : 'application/json',
+                'Authorization' : this.props.token
+            },
+            body: JSON.stringify({
+                id: id
+            })
+        }).then((response) => response.json())
+        .then((responseJson) => {
+            if (responseJson.success == true) {
+                this.getUsers();
+            } else {
+               console.log('Delete failed'); 
+            }
+        })
+    }
+
     renderUsers() {
         let users = this.state.users;
         return users.map((users, index) => {
@@ -42,7 +63,7 @@ export default class UsersList extends Component {
                     <Table.Cell>{users.name}</Table.Cell>
                     <Table.Cell>
                         <Button.Group fluid>
-                            <Button negative>Delete user</Button>
+                            <Button negative onClick = {() => this.delete(users.id)}>Delete user</Button>
                         </Button.Group>
                     </Table.Cell>
                 </Table.Row>
@@ -68,7 +89,6 @@ export default class UsersList extends Component {
                                 <Table.HeaderCell>Action</Table.HeaderCell>
                             </Table.Row>
                         </Table.Header>
-
                         <Table.Body>
                             {this.renderUsers()}
                         </Table.Body>
@@ -78,3 +98,11 @@ export default class UsersList extends Component {
         )
     }
 }
+
+const mapStateToProps = (state) => {
+    return {
+        token: state.token
+    }
+}
+
+export default connect(mapStateToProps)(UsersList);
